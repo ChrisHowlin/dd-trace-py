@@ -20,12 +20,14 @@ try:
     from Cython.Build import cythonize  # noqa: I100
     import Cython.Distutils
 except ImportError:
-    raise ImportError(
-        "Failed to import Cython modules. This can happen under versions of pip older than 18 that don't "
-        "support installing build requirements during setup. If you're using pip, make sure it's a "
-        "version >=18.\nSee the quickstart documentation for more information:\n"
-        "https://ddtrace.readthedocs.io/en/stable/installation_quickstart.html"
-    )
+    def build(setup_kwargs):
+        pass
+    #raise ImportError(
+    #    "Failed to import Cython modules. This can happen under versions of pip older than 18 that don't "
+    #    "support installing build requirements during setup. If you're using pip, make sure it's a "
+    #    "version >=18.\nSee the quickstart documentation for more information:\n"
+    #    "https://ddtrace.readthedocs.io/en/stable/installation_quickstart.html"
+    #)
 
 if sys.version_info >= (3, 0):
     from urllib.error import HTTPError
