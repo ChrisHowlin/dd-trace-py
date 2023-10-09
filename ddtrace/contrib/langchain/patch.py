@@ -6,6 +6,8 @@ from typing import Optional
 from typing import TYPE_CHECKING
 
 import langchain
+import langchain.embeddings
+import langchain.vectorstores
 from langchain.callbacks.openai_info import get_openai_token_cost_for_model
 import wrapt
 
@@ -756,12 +758,12 @@ def patch():
             )
         integration.start_log_writer()
 
-    wrap("langchain", "llms.base.BaseLLM.generate", traced_llm_generate(langchain))
-    wrap("langchain", "llms.base.BaseLLM.agenerate", traced_llm_agenerate(langchain))
-    wrap("langchain", "chat_models.base.BaseChatModel.generate", traced_chat_model_generate(langchain))
-    wrap("langchain", "chat_models.base.BaseChatModel.agenerate", traced_chat_model_agenerate(langchain))
-    wrap("langchain", "chains.base.Chain.__call__", traced_chain_call(langchain))
-    wrap("langchain", "chains.base.Chain.acall", traced_chain_acall(langchain))
+    wrap("langchain.llms.base", "BaseLLM.generate", traced_llm_generate(langchain))
+    wrap("langchain.llms.base", "BaseLLM.agenerate", traced_llm_agenerate(langchain))
+    wrap("langchain.chat_models.base", "BaseChatModel.generate", traced_chat_model_generate(langchain))
+    wrap("langchain.chat_models.base", "BaseChatModel.agenerate", traced_chat_model_agenerate(langchain))
+    wrap("langchain.chains.base", "Chain.__call__", traced_chain_call(langchain))
+    wrap("langchain.chains.base", "Chain.acall", traced_chain_acall(langchain))
     # Text embedding models override two abstract base methods instead of super calls, so we need to
     #  wrap each langchain-provided text embedding model.
     for text_embedding_model in text_embedding_models:
@@ -770,11 +772,11 @@ def patch():
             if not isinstance(
                 deep_getattr(langchain.embeddings, "%s.embed_query" % text_embedding_model), wrapt.ObjectProxy
             ):
-                wrap("langchain", "embeddings.%s.embed_query" % text_embedding_model, traced_embedding(langchain))
+                wrap("langchain.embeddings", "%s.embed_query" % text_embedding_model, traced_embedding(langchain))
             if not isinstance(
                 deep_getattr(langchain.embeddings, "%s.embed_documents" % text_embedding_model), wrapt.ObjectProxy
             ):
-                wrap("langchain", "embeddings.%s.embed_documents" % text_embedding_model, traced_embedding(langchain))
+                wrap("langchain.embeddings", "%s.embed_documents" % text_embedding_model, traced_embedding(langchain))
                 # TODO: langchain >= 0.0.209 includes async embedding implementation (only for OpenAI)
     # We need to do the same with Vectorstores.
     for vectorstore in vectorstores:
@@ -784,7 +786,7 @@ def patch():
                 deep_getattr(langchain.vectorstores, "%s.similarity_search" % vectorstore), wrapt.ObjectProxy
             ):
                 wrap(
-                    "langchain", "vectorstores.%s.similarity_search" % vectorstore, traced_similarity_search(langchain)
+                    "langchain.vectorstores", "%s.similarity_search" % vectorstore, traced_similarity_search(langchain)
                 )
 
 
